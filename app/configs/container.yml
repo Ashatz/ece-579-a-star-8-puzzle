@@ -1,0 +1,4 @@
+attrs:
+  solve_puzzle_event:
+    module_path: app.events.puzzle
+    class_name: SolvePuzzle

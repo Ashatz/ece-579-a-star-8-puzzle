@@ -1,0 +1,16 @@
+errors:
+  INVALID_STATE:
+    name: Invalid Puzzle State
+    message:
+      - lang: en_US
+        text: 'Invalid puzzle state: {state}'
+  UNSOLVABLE_STATE:
+    name: Unsolvable Puzzle State
+    message:
+      - lang: en_US
+        text: 'The puzzle configuration is unsolvable: {start} to {goal}'
+  INVALID_HEURISTIC:
+    name: Invalid Heuristic
+    message:
+      - lang: en_US
+        text: 'Invalid heuristic: {heuristic} (must be misplaced or manhattan)'

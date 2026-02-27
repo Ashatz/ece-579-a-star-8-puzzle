@@ -1,0 +1,27 @@
+cli:
+  cmds:
+    puzzle:
+      solve:
+        group_key: puzzle
+        key: solve
+        description: Solve an 8-puzzle using A* search.
+        args:
+          - name_or_flags:
+              - start
+            description: The start state (e.g. "2,8,3,1,6,4,7,*,5").
+          - name_or_flags:
+              - --goal
+            description: The goal state (default "1,2,3,4,5,6,7,8,*").
+            default: '1,2,3,4,5,6,7,8,*'
+          - name_or_flags:
+              - --heuristic
+            description: 'The heuristic to use: misplaced or manhattan.'
+            default: 'manhattan'
+            choices:
+              - misplaced
+              - manhattan
+          - name_or_flags:
+              - --blank-symbol
+            description: Symbol to display for the blank tile.
+            default: '*'
+        name: Solve Puzzle Command
