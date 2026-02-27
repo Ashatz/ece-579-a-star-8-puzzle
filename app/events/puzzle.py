@@ -6,7 +6,7 @@ import time
 from typing import Any, Dict, List, Tuple
 
 # ** app
-from .settings import PuzzleEvent
+from .settings import PuzzleEvent, pattern_db_lookup
 
 
 # *** events
@@ -33,7 +33,7 @@ class SolvePuzzle(PuzzleEvent):
         :type start: str
         :param goal: The goal state as a string.
         :type goal: str
-        :param heuristic: The heuristic to use ('misplaced' or 'manhattan').
+        :param heuristic: The heuristic to use ('misplaced', 'manhattan', 'linear-conflict', or 'pattern-db').
         :type heuristic: str
         :param blank_symbol: The symbol to display for the blank tile.
         :type blank_symbol: str
@@ -44,7 +44,7 @@ class SolvePuzzle(PuzzleEvent):
         '''
 
         # Validate the heuristic name.
-        valid_heuristics = ('misplaced', 'manhattan')
+        valid_heuristics = ('misplaced', 'manhattan', 'linear-conflict', 'pattern-db')
         self.verify(
             expression=heuristic in valid_heuristics,
             error_code='INVALID_HEURISTIC',
@@ -73,6 +73,8 @@ class SolvePuzzle(PuzzleEvent):
         heuristic_map: Dict[str, Any] = {
             'misplaced': self._misplaced,
             'manhattan': self._manhattan,
+            'linear-conflict': self._linear_conflict,
+            'pattern-db': self._pattern_db,
         }
         heuristic_fn = heuristic_map[heuristic]
 
@@ -274,3 +276,90 @@ class SolvePuzzle(PuzzleEvent):
 
         # Return the total Manhattan distance.
         return total
+
+    # * method: _linear_conflict
+    def _linear_conflict(self,
+            state: Tuple[int, ...],
+            goal: Tuple[int, ...],
+        ) -> int:
+        '''
+        Compute Manhattan distance plus linear conflict penalty.
+        Two tiles are in linear conflict if they are in the same row/column,
+        both belong in that row/column in the goal, but are reversed.
+
+        :param state: The current state.
+        :type state: Tuple[int, ...]
+        :param goal: The goal state.
+        :type goal: Tuple[int, ...]
+        :return: Manhattan distance plus 2 per conflict.
+        :rtype: int
+        '''
+
+        # Start with Manhattan distance.
+        manhattan = self._manhattan(state, goal)
+        conflict = 0
+
+        # Build goal index lookup: tile value -> goal position.
+        goal_index = {val: idx for idx, val in enumerate(goal)}
+
+        # Check row conflicts.
+        for row in range(3):
+            pairs = []
+            for col in range(3):
+                pos = row * 3 + col
+                tile = state[pos]
+                if tile != 0:
+                    goal_pos = goal_index[tile]
+                    goal_row = goal_pos // 3
+                    if goal_row == row:
+                        pairs.append((col, goal_pos % 3))
+
+            # Count reversed pairs in this row.
+            for i in range(len(pairs)):
+                for j in range(i + 1, len(pairs)):
+                    if pairs[i][0] > pairs[j][0] and pairs[i][1] < pairs[j][1]:
+                        conflict += 2
+                    elif pairs[i][0] < pairs[j][0] and pairs[i][1] > pairs[j][1]:
+                        conflict += 2
+
+        # Check column conflicts.
+        for col in range(3):
+            pairs = []
+            for row in range(3):
+                pos = row * 3 + col
+                tile = state[pos]
+                if tile != 0:
+                    goal_pos = goal_index[tile]
+                    goal_col = goal_pos % 3
+                    if goal_col == col:
+                        pairs.append((row, goal_pos // 3))
+
+            # Count reversed pairs in this column.
+            for i in range(len(pairs)):
+                for j in range(i + 1, len(pairs)):
+                    if pairs[i][0] > pairs[j][0] and pairs[i][1] < pairs[j][1]:
+                        conflict += 2
+                    elif pairs[i][0] < pairs[j][0] and pairs[i][1] > pairs[j][1]:
+                        conflict += 2
+
+        # Return manhattan + conflict.
+        return manhattan + conflict
+
+    # * method: _pattern_db
+    def _pattern_db(self,
+            state: Tuple[int, ...],
+            goal: Tuple[int, ...],
+        ) -> int:
+        '''
+        Compute the additive pattern database heuristic.
+
+        :param state: The current state.
+        :type state: Tuple[int, ...]
+        :param goal: The goal state.
+        :type goal: Tuple[int, ...]
+        :return: The PDB heuristic value.
+        :rtype: int
+        '''
+
+        # Delegate to the module-level PDB lookup.
+        return pattern_db_lookup(state, goal)

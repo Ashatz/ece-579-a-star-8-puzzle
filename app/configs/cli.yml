@@ -15,11 +15,13 @@ cli:
             default: '1,2,3,4,5,6,7,8,*'
           - name_or_flags:
               - --heuristic
-            description: 'The heuristic to use: misplaced or manhattan.'
+            description: 'The heuristic to use: misplaced, manhattan, linear-conflict, or pattern-db.'
             default: 'manhattan'
             choices:
               - misplaced
               - manhattan
+              - linear-conflict
+              - pattern-db
           - name_or_flags:
               - --blank-symbol
             description: Symbol to display for the blank tile.
