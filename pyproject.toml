@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eight-puzzle-solver"
+version = "0.1.0"
+description = "A* 8-Puzzle Solver using the Tiferet DDD Framework"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "tiferet>=1.9.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[project.scripts]
+puzzle-cli = "puzzle_cli:main"
