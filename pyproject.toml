@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eight-puzzle-solver"
+version = "0.1.0"
+description = "A* search solver for the 8-puzzle problem, built with the Tiferet framework"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Great Strength", email = "daiseishi237@example.com"},
+]
+keywords = ["8-puzzle", "a-star", "search", "heuristic", "tiferet"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "tiferet>=1.9.5",
+]
+
+[project.scripts]
+puzzle-cli = "puzzle_cli:cli.run"

@@ -1,0 +1,16 @@
+errors:
+  INVALID_STATE:
+    name: Invalid Puzzle State
+    message:
+      - lang: en_US
+        text: 'State must contain exactly 9 tiles (0-8, each once). Use * for blank. Got: {state}'
+  UNSOLVABLE_STATE:
+    name: Unsolvable Puzzle
+    message:
+      - lang: en_US
+        text: 'This configuration is unsolvable (mismatched inversion parity).'
+  INVALID_HEURISTIC:
+    name: Invalid Heuristic
+    message:
+      - lang: en_US
+        text: "Unsupported heuristic: {heuristic}. Use 'manhattan' or 'misplaced'."

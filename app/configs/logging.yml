@@ -1,0 +1,14 @@
+formatters:
+  standard:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+handlers:
+  console:
+    formatter_id: standard
+    type: stream
+
+loggers:
+  default:
+    level: WARNING
+    handlers:
+      - console

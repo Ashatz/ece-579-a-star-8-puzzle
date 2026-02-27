@@ -1,0 +1,24 @@
+features:
+  puzzle:
+    solve:
+      name: 'Solve Puzzle'
+      description: 'Solve the 8-puzzle using A* search'
+      commands:
+        - attribute_id: solve_puzzle_event
+          name: Run A* search on the puzzle
+    solve_manhattan:
+      name: 'Solve Puzzle (Manhattan)'
+      description: 'Solve the 8-puzzle using Manhattan distance heuristic'
+      commands:
+        - attribute_id: solve_puzzle_event
+          name: Run A* search with Manhattan heuristic
+          params:
+            heuristic: 'manhattan'
+    solve_misplaced:
+      name: 'Solve Puzzle (Misplaced)'
+      description: 'Solve the 8-puzzle using misplaced tiles heuristic'
+      commands:
+        - attribute_id: solve_puzzle_event
+          name: Run A* search with misplaced tiles heuristic
+          params:
+            heuristic: 'misplaced'
