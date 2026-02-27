@@ -22,3 +22,19 @@ features:
           name: Solve with misplaced tiles
           params:
             heuristic: 'misplaced'
+    solve_linear_conflict:
+      name: 'Solve Puzzle (Linear Conflict)'
+      description: 'Solve the 8-puzzle using Manhattan + linear conflict heuristic'
+      commands:
+        - attribute_id: solve_puzzle_event
+          name: Run A* search with linear conflict heuristic
+          params:
+            heuristic: 'linear-conflict'
+    solve_pattern_db:
+      name: 'Solve Puzzle (Pattern DB)'
+      description: 'Solve the 8-puzzle using additive pattern database heuristic'
+      commands:
+        - attribute_id: solve_puzzle_event
+          name: Run A* search with pattern database heuristic
+          params:
+            heuristic: 'pattern-db'

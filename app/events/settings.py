@@ -1,10 +1,186 @@
 # *** imports
 
 # ** core
-from typing import List
+from collections import deque
+from typing import Dict, List, Tuple
 
 # ** infra
 from tiferet.events import *
+
+
+# *** constants
+
+# ** constant: adjacency_3x3
+ADJACENCY_3X3: Dict[int, List[int]] = {
+    0: [1, 3],
+    1: [0, 2, 4],
+    2: [1, 5],
+    3: [0, 4, 6],
+    4: [1, 3, 5, 7],
+    5: [2, 4, 8],
+    6: [3, 7],
+    7: [4, 6, 8],
+    8: [5, 7],
+}
+
+# ** constant: pdb_tiles_1
+_PDB_TILES_1 = [1, 2, 3, 4]
+
+# ** constant: pdb_tiles_2
+_PDB_TILES_2 = [5, 6, 7, 8]
+
+# ** constant: pdb_cache
+_PDB_CACHE: Dict[Tuple[int, ...], Tuple[dict, dict]] = {}
+
+
+# *** classes
+
+# ** class: pdb_functions
+
+# * method: _abstract_state
+def _abstract_state(state, sorted_tiles: List[int]) -> Tuple[int, ...]:
+    '''
+    Extract an abstract state for a given tile pattern.
+
+    :param state: The full puzzle state (tuple or list).
+    :type state: tuple or list
+    :param sorted_tiles: The tile values in this pattern.
+    :type sorted_tiles: List[int]
+    :return: A tuple of (blank_pos, pos_of_tile_1, pos_of_tile_2, ...).
+    :rtype: Tuple[int, ...]
+    '''
+
+    # Find the blank position.
+    blank_pos = list(state).index(0)
+
+    # Find positions of each pattern tile.
+    tile_positions = tuple(
+        list(state).index(t) for t in sorted_tiles
+    )
+
+    # Return the abstract state.
+    return (blank_pos,) + tile_positions
+
+
+# * method: _precompute_pdb
+def _precompute_pdb(tiles: set, goal: Tuple[int, ...]) -> Dict[Tuple[int, ...], int]:
+    '''
+    Precompute a pattern database via backward 0-1 BFS from the goal.
+
+    :param tiles: The set of tile values in this pattern.
+    :type tiles: set
+    :param goal: The goal state as a tuple.
+    :type goal: Tuple[int, ...]
+    :return: A mapping from abstract state to exact move cost.
+    :rtype: Dict[Tuple[int, ...], int]
+    '''
+
+    # Build the sorted tile list for abstract state extraction.
+    sorted_tiles = sorted(tiles)
+
+    # Compute the goal's abstract state.
+    goal_abstract = _abstract_state(goal, sorted_tiles)
+
+    # Initialize BFS with the goal abstract state at cost 0.
+    pdb: Dict[Tuple[int, ...], int] = {goal_abstract: 0}
+    dq = deque([(goal_abstract, 0)])
+
+    # Run 0-1 BFS.
+    while dq:
+
+        # Pop the next abstract state.
+        current, cost = dq.popleft()
+        blank_pos = current[0]
+
+        # Reconstruct the abstract tile positions.
+        tile_positions = {sorted_tiles[i]: current[i + 1] for i in range(len(sorted_tiles))}
+
+        # Try each neighbor of the blank.
+        for neighbor_pos in ADJACENCY_3X3[blank_pos]:
+
+            # Determine which tile (if any) occupies the neighbor position.
+            moved_tile = None
+            for t, p in tile_positions.items():
+                if p == neighbor_pos:
+                    moved_tile = t
+                    break
+
+            # Build the new abstract state after swapping blank with neighbor.
+            if moved_tile is not None:
+                # Pattern tile moves: cost 1.
+                new_positions = dict(tile_positions)
+                new_positions[moved_tile] = blank_pos
+                new_abstract = (neighbor_pos,) + tuple(
+                    new_positions[t] for t in sorted_tiles
+                )
+                move_cost = 1
+            else:
+                # Non-pattern tile moves: cost 0.
+                new_abstract = (neighbor_pos,) + current[1:]
+                move_cost = 0
+
+            # Record if this abstract state hasn't been seen.
+            new_total = cost + move_cost
+            if new_abstract not in pdb:
+                pdb[new_abstract] = new_total
+                if move_cost == 0:
+                    dq.appendleft((new_abstract, new_total))
+                else:
+                    dq.append((new_abstract, new_total))
+
+    # Return the precomputed PDB.
+    return pdb
+
+
+# * method: _get_pdb_tables
+def _get_pdb_tables(goal: Tuple[int, ...]) -> Tuple[dict, dict]:
+    '''
+    Return cached PDB tables for the goal, computing lazily on first access.
+
+    :param goal: The goal state as a tuple.
+    :type goal: Tuple[int, ...]
+    :return: A pair of PDB dicts (one per tile pattern).
+    :rtype: Tuple[dict, dict]
+    '''
+
+    # Check the cache first.
+    if goal not in _PDB_CACHE:
+
+        # Precompute both pattern databases.
+        pdb1 = _precompute_pdb(set(_PDB_TILES_1), goal)
+        pdb2 = _precompute_pdb(set(_PDB_TILES_2), goal)
+        _PDB_CACHE[goal] = (pdb1, pdb2)
+
+    # Return the cached tables.
+    return _PDB_CACHE[goal]
+
+
+# * method: pattern_db_lookup
+def pattern_db_lookup(state, goal) -> int:
+    '''
+    Look up the additive pattern database heuristic value for a state.
+
+    :param state: The current puzzle state.
+    :type state: tuple or list
+    :param goal: The goal puzzle state.
+    :type goal: tuple or list
+    :return: The sum of both pattern costs.
+    :rtype: int
+    '''
+
+    # Ensure tuples for cache key.
+    goal_tuple = tuple(goal)
+    state_tuple = tuple(state)
+
+    # Get the PDB tables for this goal.
+    pdb1, pdb2 = _get_pdb_tables(goal_tuple)
+
+    # Look up both abstract states and return their sum.
+    abs1 = _abstract_state(state_tuple, _PDB_TILES_1)
+    abs2 = _abstract_state(state_tuple, _PDB_TILES_2)
+
+    # Return the additive heuristic value.
+    return pdb1.get(abs1, 0) + pdb2.get(abs2, 0)
 
 
 # *** events

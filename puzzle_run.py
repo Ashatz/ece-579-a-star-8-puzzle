@@ -22,7 +22,7 @@ test_cases = [
 ]
 
 # Heuristics to benchmark.
-heuristics = ['misplaced', 'manhattan']
+heuristics = ['misplaced', 'manhattan', 'linear-conflict', 'pattern-db']
 
 # Run each test case with each heuristic.
 for label, start, goal in test_cases:
