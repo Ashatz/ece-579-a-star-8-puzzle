@@ -157,4 +157,4 @@ The following results were measured using `puzzle_run.py` on two hard puzzle con
 - Felner et al., "Additive Pattern Database Heuristics" (JAIR 2004) — foundational for PDBs.
 
 **Attribution**  
-This heuristics guide was drafted with the assistance of Grok 4, built by xAI.
+This heuristics guide was drafted with the assistance of Grok 4, built by xAI. Benchmark results and heuristic implementations were contributed by Oz (Warp AI agent).

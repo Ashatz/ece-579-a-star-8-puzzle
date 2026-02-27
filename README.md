@@ -188,5 +188,5 @@ MIT
 ## Acknowledgments
 
 - **Grok 4** (xAI) — AI collaborator for initial design blueprint, architecture decisions, and documentation drafting.
-- **Oz** (Warp AI agent) — AI collaborator for full code implementation, YAML configurations, end-to-end verification, and README finalization.
+- **Oz** (Warp AI agent) — AI collaborator for full code implementation, YAML configurations, end-to-end verification, and benchmark test collection.
 - Tiferet maintainers — For an inspiring, beautiful framework.
