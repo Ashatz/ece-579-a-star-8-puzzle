@@ -13,4 +13,4 @@ errors:
     name: Invalid Heuristic
     message:
       - lang: en_US
-        text: "Unsupported heuristic: {heuristic}. Use 'manhattan' or 'misplaced'."
+        text: "Unsupported heuristic: {heuristic}. Use 'misplaced', 'manhattan', 'linear-conflict', or 'pattern-db'."

@@ -16,7 +16,7 @@ test_cases = [
 ]
 
 # Heuristics to compare.
-heuristics = ['manhattan', 'misplaced']
+heuristics = ['misplaced', 'manhattan', 'linear-conflict', 'pattern-db']
 
 # Print header.
 print('=' * 80)

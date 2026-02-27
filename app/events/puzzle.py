@@ -6,7 +6,7 @@ import time
 from typing import Any, Dict, List, Tuple
 
 # ** app
-from .settings import PuzzleEvent
+from .settings import PuzzleEvent, pattern_db_lookup
 
 
 # *** events
@@ -15,7 +15,7 @@ from .settings import PuzzleEvent
 class SolvePuzzle(PuzzleEvent):
     '''
     A domain event to solve the 8-puzzle using the A* search algorithm.
-    Supports manhattan and misplaced-tiles heuristics.
+    Supports misplaced, manhattan, linear-conflict, and pattern-db heuristics.
     '''
 
     # * method: execute
@@ -33,7 +33,7 @@ class SolvePuzzle(PuzzleEvent):
         :type start: str
         :param goal: The goal state as a string.
         :type goal: str
-        :param heuristic: The heuristic to use ('manhattan' or 'misplaced').
+        :param heuristic: The heuristic to use ('misplaced', 'manhattan', 'linear-conflict', or 'pattern-db').
         :type heuristic: str
         :param blank_symbol: The symbol to display for the blank tile.
         :type blank_symbol: str
@@ -44,8 +44,9 @@ class SolvePuzzle(PuzzleEvent):
         '''
 
         # Validate the heuristic selection.
+        valid_heuristics = ('misplaced', 'manhattan', 'linear-conflict', 'pattern-db')
         self.verify(
-            heuristic in ('manhattan', 'misplaced'),
+            heuristic in valid_heuristics,
             'INVALID_HEURISTIC',
             f'Unsupported heuristic: {heuristic}',
             heuristic=heuristic,
@@ -69,7 +70,13 @@ class SolvePuzzle(PuzzleEvent):
         )
 
         # Select the heuristic function.
-        heuristic_fn = self._manhattan if heuristic == 'manhattan' else self._misplaced
+        heuristic_map = {
+            'misplaced': self._misplaced,
+            'manhattan': self._manhattan,
+            'linear-conflict': self._linear_conflict,
+            'pattern-db': self._pattern_db,
+        }
+        heuristic_fn = heuristic_map[heuristic]
 
         # Run A* search.
         start_time = time.perf_counter()
@@ -244,6 +251,92 @@ class SolvePuzzle(PuzzleEvent):
 
         # Return the path.
         return path
+
+    # * method: _linear_conflict
+    def _linear_conflict(self, state: List[int], goal: List[int]) -> int:
+        '''
+        Calculate Manhattan distance plus linear conflict penalty.
+        Adds +2 for each pair of tiles in the same row or column that
+        are in their correct line but reversed relative to their goal
+        positions.
+
+        :param state: The current state.
+        :type state: List[int]
+        :param goal: The goal state.
+        :type goal: List[int]
+        :return: Manhattan distance plus linear conflict penalty.
+        :rtype: int
+        '''
+
+        # Start with the Manhattan distance.
+        manhattan = self._manhattan(state, goal)
+
+        # Build a lookup from tile value to goal index.
+        goal_index = {goal[i]: i for i in range(9)}
+
+        # Count linear conflicts.
+        conflict = 0
+
+        # Check rows for conflicts.
+        for row in range(3):
+            tiles_in_row = []
+            for col in range(3):
+                tile = state[row * 3 + col]
+                if tile != 0:
+                    g_pos = goal_index[tile]
+                    g_row = g_pos // 3
+                    g_col = g_pos % 3
+                    if g_row == row:
+                        tiles_in_row.append((col, g_col))
+
+            # Detect reversed pairs (current col order vs goal col order).
+            for i in range(len(tiles_in_row)):
+                for j in range(i + 1, len(tiles_in_row)):
+                    _, goal_col_i = tiles_in_row[i]
+                    _, goal_col_j = tiles_in_row[j]
+                    if goal_col_i > goal_col_j:
+                        conflict += 2
+
+        # Check columns for conflicts.
+        for col in range(3):
+            tiles_in_col = []
+            for row in range(3):
+                tile = state[row * 3 + col]
+                if tile != 0:
+                    g_pos = goal_index[tile]
+                    g_row = g_pos // 3
+                    g_col = g_pos % 3
+                    if g_col == col:
+                        tiles_in_col.append((row, g_row))
+
+            # Detect reversed pairs (current row order vs goal row order).
+            for i in range(len(tiles_in_col)):
+                for j in range(i + 1, len(tiles_in_col)):
+                    _, goal_row_i = tiles_in_col[i]
+                    _, goal_row_j = tiles_in_col[j]
+                    if goal_row_i > goal_row_j:
+                        conflict += 2
+
+        # Return Manhattan plus conflict penalty.
+        return manhattan + conflict
+
+    # * method: _pattern_db
+    def _pattern_db(self, state: List[int], goal: List[int]) -> int:
+        '''
+        Look up the additive pattern database heuristic value.
+        Uses two disjoint 4-tile patterns ({1,2,3,4} and {5,6,7,8})
+        precomputed via BFS.
+
+        :param state: The current state.
+        :type state: List[int]
+        :param goal: The goal state.
+        :type goal: List[int]
+        :return: The sum of PDB lookups for both patterns.
+        :rtype: int
+        '''
+
+        # Delegate to the module-level PDB lookup.
+        return pattern_db_lookup(state, goal)
 
     # * method: _misplaced
     def _misplaced(self, state: List[int], goal: List[int]) -> int:
