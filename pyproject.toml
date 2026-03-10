@@ -10,7 +10,7 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
-    {name = "Great Strength", email = "daiseishi237@example.com"},
+    {name = "Andrew Shatz", email = "ashatz@arizona.edu"},
 ]
 keywords = ["8-puzzle", "a-star", "search", "heuristic", "tiferet"]
 classifiers = [
