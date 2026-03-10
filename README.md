@@ -3,7 +3,8 @@
 An elegant, configuration-driven A* search solver for the classic 8-puzzle sliding tile problem, built using the **[Tiferet](https://github.com/greatstrength/tiferet)** framework.
 
 **ECE 479/579 – Spring 2026 – Homework 3**  
-**Due: February 28, 2026**
+**Due: February 28, 2026**  
+**Author: Andrew Shatz** (ashatz@arizona.edu)
 
 ## Overview
 
