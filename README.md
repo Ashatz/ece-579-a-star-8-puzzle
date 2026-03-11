@@ -110,7 +110,7 @@ The solver expects a **flat, row-major** representation of the 3×3 puzzle grid.
 | `1 2 3 4 5 6 7 8 *`                   | 1 2 3<br>4 5 6<br>7 8 *                |
 
 **Why row-major?**  
-It matches how humans naturally read and type a grid (row by row), and it’s the same convention used in the pretty-printed output and in the internal `settings.py` utilities (`display_to_internal` and `internal_to_display`).
+It matches how humans naturally read and type a grid (row by row), and it's the same convention used in the pretty-printed output and the internal utility methods.
 
 All domain events work with the internal numeric representation (0 = blank), while CLI and printed results show the display version (`*` by default).
 
@@ -131,11 +131,18 @@ ece-579-a-star-8-puzzle/
 ├── pyproject.toml             # Dependencies (only tiferet + stdlib)
 ├── README.md
 ├── docs/
-│   └── heuristics-guide.md    # Detailed heuristic explanations, examples & references
+│   ├── heuristics_guide.md    # Detailed heuristic explanations, examples & references
+│   └── guides/
+│       └── utils/             # Utility class guides (state, search, pdb, heuristic)
 └── app/
     ├── events/
-    │   ├── puzzle.py          # SolvePuzzle (A*), ValidatePuzzleState, etc.
-    │   └── settings.py        # Base utilities: solvability, pretty-print (*), state conversion
+    │   ├── puzzle.py          # SolvePuzzle domain event (delegates to utils)
+    │   └── settings.py        # Minimal re-export of tiferet.events
+    ├── utils/
+    │   ├── state.py           # PuzzleStateParser — parsing, validation, solvability
+    │   ├── search.py          # AStarSearch — A* algorithm, neighbor generation
+    │   ├── pdb.py             # PatternDatabase — additive PDB precomputation & lookup
+    │   └── heuristic.py       # HeuristicCalculator — all four heuristic functions
     └── configs/
         ├── app.yml            # Interfaces (puzzle_solver, puzzle_cli)
         ├── cli.yml            # Command/arg definitions (--heuristic, --goal, etc.)
@@ -158,7 +165,7 @@ All heuristics guarantee optimal paths when used with A*.
 
 For detailed definitions, formulas, examples, properties, comparison rationale, and references, see:
 
-→ [docs/heuristics-guide.md](docs/heuristics-guide.md)
+→ [docs/heuristics_guide.md](docs/heuristics_guide.md)
 
 ### Quick Heuristics Comparison
 
