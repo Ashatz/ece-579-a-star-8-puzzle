@@ -110,7 +110,7 @@ The solver expects a **flat, row-major** representation of the 3×3 puzzle grid.
 | `1 2 3 4 5 6 7 8 *`                   | 1 2 3<br>4 5 6<br>7 8 *                |
 
 **Why row-major?**  
-It matches how humans naturally read and type a grid (row by row), and it's the same convention used in the pretty-printed output and in the internal `settings.py` utilities (`parse_state` and `format_grid`).
+It matches how humans naturally read and type a grid (row by row), and it's the same convention used in the pretty-printed output and the internal utility methods.
 
 All domain events work with the internal numeric representation (0 = blank), while CLI and printed results show the display version (`*` by default).
 
@@ -130,23 +130,26 @@ ece-579-a-star-8-puzzle/
 ├── puzzle_run.py              # Loads puzzle_solver & runs benchmark suite
 ├── pyproject.toml             # Dependencies (only tiferet + stdlib)
 ├── README.md
-├── AGENTS.md                  # AI agent orientation document
 ├── docs/
-│   └── heuristics_guide.md    # Detailed heuristic explanations, examples & references
+│   ├── heuristics_guide.md    # Detailed heuristic explanations, examples & references
+│   └── guides/
+│       └── utils/             # Utility class guides (state, search, pdb, heuristic)
 └── app/
-    ├── __init__.py            # Package docstring + __version__
     ├── events/
-    │   ├── __init__.py
-    │   ├── settings.py        # PuzzleEvent base class + PDB precomputation utilities
-    │   └── puzzle.py          # SolvePuzzle domain event (A* + all 4 heuristics)
+    │   ├── puzzle.py          # SolvePuzzle domain event (delegates to utils)
+    │   └── settings.py        # Minimal re-export of tiferet.events
+    ├── utils/
+    │   ├── state.py           # PuzzleStateParser — parsing, validation, solvability
+    │   ├── search.py          # AStarSearch — A* algorithm, neighbor generation
+    │   ├── pdb.py             # PatternDatabase — additive PDB precomputation & lookup
+    │   └── heuristic.py       # HeuristicCalculator — all four heuristic functions
     └── configs/
-        ├── __init__.py
         ├── app.yml            # Interfaces (puzzle_solver, puzzle_cli)
         ├── cli.yml            # Command/arg definitions (--heuristic, --goal, etc.)
         ├── container.yml      # Injects domain events
-        ├── error.yml          # Custom errors (INVALID_STATE, UNSOLVABLE_STATE, INVALID_HEURISTIC)
-        ├── feature.yml        # puzzle.solve feature + heuristic-specific variants
-        └── logging.yml        # Logging config
+        ├── error.yml          # Custom errors (unsolvable, invalid state, etc.)
+        ├── feature.yml        # puzzle.solve feature + heuristic param
+        └── logging.yml        # Optional structured logs
 ```
 
 ## Heuristics
@@ -178,7 +181,18 @@ For detailed definitions, formulas, examples, properties, comparison rationale, 
 Detected via **inversion parity**:
 - Flatten state (ignore blank), count inversions (pairs out of order).
 - Puzzle is solvable iff start and goal have the same parity (both even or both odd).
-- Reported clearly with the `UNSOLVABLE_STATE` error code.
+- Reported clearly: "This configuration is unsolvable (mismatched inversion parity)."
+
+## Testing
+
+The project includes 52 tests covering all utility classes and the domain event. Install test dependencies and run:
+
+```bash
+pip install -e ".[test]"
+python -m pytest app/ -v
+```
+
+Tests are co-located with their modules in `app/utils/tests/` and `app/events/tests/`, following Tiferet's artifact comment structure.
 
 ## Built With
 
